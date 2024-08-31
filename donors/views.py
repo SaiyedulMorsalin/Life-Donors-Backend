@@ -196,3 +196,10 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = DonorProfileFilter
     search_fields = ["blood_group", "district", "date_of_donation"]
+
+    def get(self, blood_group, district, date_of_donation):
+        queryset = get_object_or_404(
+            blood_group=blood_group,
+            blood_group=blood_group,
+            blood_group=blood_group,
+        )
