@@ -51,7 +51,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             username=username, first_name=first_name, last_name=last_name, email=email
         )
         user.set_password(password)
-        user.is_active = True  # Account is inactive until email verification
+        user.is_active = False  # Account is inactive until email verification
         user.save()
 
         # Create the related DonorProfile instance
