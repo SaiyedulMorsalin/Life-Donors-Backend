@@ -8,8 +8,12 @@ class DonorProfileFilter(filters.FilterSet):
     date_of_donation = filters.DateFilter(
         field_name="date_of_donation", lookup_expr="exact"
     )
-    donor_type = filters.CharFilter(field_name="donor_type", lookup_expr="iexact")
+    # donor_type = filters.CharFilter(field_name="donor_type", lookup_expr="iexact")  # Remove or replace this line
 
     class Meta:
         model = DonorProfile
-        fields = ["blood_group", "district", "date_of_donation", "donor_type"]
+        fields = [
+            "blood_group",
+            "district",
+            "date_of_donation",
+        ]

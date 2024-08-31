@@ -192,7 +192,6 @@ class UserDashboardAPIView(APIView):
 class DonorSearchViewSet(viewsets.ModelViewSet):
     queryset = DonorProfile.objects.all()
     serializer_class = DonorProfileSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = DonorProfileFilter
-    search_fields = ["blood_group", "district", "date_of_donation", "donor_type"]
+    search_fields = ["blood_group", "district", "date_of_donation"]
