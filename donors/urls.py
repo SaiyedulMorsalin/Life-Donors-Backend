@@ -5,15 +5,17 @@ from . import views
 # Initialize the default router
 router = routers.DefaultRouter()
 
-# Register the ViewSet with a base name; URL parameters will be handled by ViewSet's actions
-router.register(r"requests", views.UserBloodRequestViewSet, basename="userbloodrequest")
-router.register("donors", views.DonorSearchViewSet, basename="donor")
+# Register the ViewSets with the router
+# router.register(r"requests", views.UserBloodRequestViewSet, basename="userbloodrequest")
+router.register(r"donors", views.DonorSearchViewSet, basename="donor")
+
+# Define urlpatterns
 urlpatterns = [
     path("register/", views.UserRegistrationAPIView.as_view(), name="user_register"),
     path(
         "profile/<int:user_id>/",
         views.UserProfileAPIView.as_view(),
-        name="user_profile",  # Changed name to "user_profile"
+        name="user_profile",
     ),
     path("login/", views.UserLoginApiView.as_view(), name="login"),
     path("logout/", views.UserLogoutView.as_view(), name="logout"),
@@ -23,5 +25,10 @@ urlpatterns = [
         name="user_dashboard",
     ),
     path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
+    path(
+        "requests/",
+        views.UserBloodRequestAPIView.as_view(),
+        name="blood_requests",
+    ),
     path("", include(router.urls)),
 ]

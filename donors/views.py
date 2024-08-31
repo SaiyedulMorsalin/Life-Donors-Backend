@@ -125,37 +125,33 @@ class UserProfileAPIView(APIView):
             )
 
 
-class UserBloodRequestViewSet(viewsets.ModelViewSet):
-    queryset = UserBloodRequest.objects.all()
-    serializer_class = UserBloodRequestSerializer
-    permission_classes = [IsAuthenticated]  # Ensuring the user is authenticated
+class UserBloodRequestAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = UserBloodRequest.objects.all()
         donor_id = self.request.query_params.get("donor_id")
-
         if donor_id:
-            try:
-                int_donor_id = int(donor_id)
-                queryset = queryset.filter(donor_id=int_donor_id)
-            except ValueError:
-                raise ValidationError({"error": "Invalid donor ID."})
+            queryset = queryset.filter(donor_id=donor_id)
         return queryset
 
+    def get(self, request):
+        queryset = self.get_queryset()
+        serializer = UserBloodRequestSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = UserBloodRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def perform_create(self, serializer):
-        user = self.request.user
-
-        # Check if the user is authenticated
-        if isinstance(user, AnonymousUser) or not user.is_authenticated:
-            raise ValidationError(
-                {"error": "User must be authenticated to create a blood request."}
-            )
-
         try:
-            donor_profile = get_object_or_404(DonorProfile, user=user)
+            donor_profile = get_object_or_404(DonorProfile, user=self.request.user)
         except DonorProfile.DoesNotExist:
             raise ValidationError({"error": "Donor profile not found."})
-
         serializer.save(donor=donor_profile)
 
 
