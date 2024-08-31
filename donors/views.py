@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
@@ -155,14 +155,14 @@ class UserDashboardAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = UserBloodRequestSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, user_id, *args, **kwargs):
         # Get the currently authenticated user
         user = request.user
-
+        print(user_id)
         # Fetch the donor profile for the authenticated user
         try:
-            donor_profile = DonorProfile.objects.get(user=self.request.user)
-            print(donor_profile.user)
+            donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
+            print("users_pro", donor_profile.user)
         except DonorProfile.DoesNotExist:
             return Response({"error": "Donor profile not found."}, status=404)
 
@@ -181,6 +181,7 @@ class UserDashboardAPIView(APIView):
 
         # Combine all the data into a response
         data = {
+            "user_id": user_id,
             "my_requests": user_requests_serializer.data,
             # "pending_requests": pending_requests_serializer.data,
         }

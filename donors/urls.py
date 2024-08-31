@@ -21,7 +21,11 @@ urlpatterns = [
     ),
     path("login/", views.UserLoginApiView.as_view(), name="login"),
     path("logout/", views.UserLogoutView.as_view(), name="logout"),
-    path("dashboard/", views.UserDashboardAPIView.as_view(), name="user_dashboard"),
+    path(
+        "dashboard/<int:user_id>/",
+        views.UserDashboardAPIView.as_view(),
+        name="user_dashboard",
+    ),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
