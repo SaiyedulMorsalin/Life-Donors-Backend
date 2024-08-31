@@ -133,6 +133,7 @@ class UserBloodRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         donor_id = self.request.query_params.get("donor_id")
+        print(type(donor_id))
         if donor_id:
             queryset = queryset.filter(donor_id=donor_id)
         return queryset
@@ -196,10 +197,3 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = DonorProfileFilter
     search_fields = ["blood_group", "district", "date_of_donation"]
-
-    def get(self, blood_group, district, date_of_donation):
-        queryset = get_object_or_404(
-            blood_group=blood_group,
-            blood_group=blood_group,
-            blood_group=blood_group,
-        )
