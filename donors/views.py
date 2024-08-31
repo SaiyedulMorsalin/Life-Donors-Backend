@@ -128,27 +128,34 @@ class UserProfileAPIView(APIView):
 class UserBloodRequestViewSet(viewsets.ModelViewSet):
     queryset = UserBloodRequest.objects.all()
     serializer_class = UserBloodRequestSerializer
-    # permission_classes = [IsAuthenticated]  # Ensuring the user is authenticated
+    permission_classes = [IsAuthenticated]  # Ensuring the user is authenticated
 
     def get_queryset(self):
         queryset = super().get_queryset()
         donor_id = self.request.query_params.get("donor_id")
-        print(type(donor_id))
+
         if donor_id:
-            queryset = queryset.filter(donor_id=donor_id)
+            try:
+                int_donor_id = int(donor_id)
+                queryset = queryset.filter(donor_id=int_donor_id)
+            except ValueError:
+                raise ValidationError({"error": "Invalid donor ID."})
         return queryset
 
     def perform_create(self, serializer):
-        # Get the currently authenticated user
         user = self.request.user
 
-        # Ensure the donor is set to the authenticated user's donor profile
+        # Check if the user is authenticated
+        if isinstance(user, AnonymousUser) or not user.is_authenticated:
+            raise ValidationError(
+                {"error": "User must be authenticated to create a blood request."}
+            )
+
         try:
-            donor_profile = DonorProfile.objects.get(user=user)
+            donor_profile = get_object_or_404(DonorProfile, user=user)
         except DonorProfile.DoesNotExist:
             raise ValidationError({"error": "Donor profile not found."})
 
-        # Save the new UserBloodRequest with the donor profile
         serializer.save(donor=donor_profile)
 
 
