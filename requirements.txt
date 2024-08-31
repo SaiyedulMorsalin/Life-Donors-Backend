@@ -1,0 +1,17 @@
+asgiref
+dj-database-url
+Django
+django-cors-headers
+django-environ
+django-filter
+djangorestframework
+djangorestframework-simplejwt
+environ
+Markdown
+pillow
+psycopg2
+psycopg2-binary
+PyJWT
+sqlparse
+typing_extensions
+tzdata
