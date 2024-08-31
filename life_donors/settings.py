@@ -8,14 +8,13 @@ env = environ.Env()
 environ.Env.read_env()
 
 
-# SECRET_KEY = env("SECRET_KEY")
 SECRET_KEY = "django-insecure-$ptm3s0a^cp+nzxg$ow07at^0m@7=$^&)h1*o)&^_o0ufe54$t"
 
 DEBUG = True
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ALLOWED_HOSTS = ["*"]
-
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://life-donors.onrender.com"]
 
 # # Email Configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
