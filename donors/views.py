@@ -160,17 +160,13 @@ class CreateUserBloodRequestView(APIView):
         if serializer.is_valid():
             # Extracting the validated data
             blood_group = serializer.validated_data["blood_group"]
+            user_id = serializer.validated_data["user_id"]
             blood_request_type = serializer.validated_data["blood_request_type"]
             district = serializer.validated_data["district"]
             date_of_donation = serializer.validated_data["date_of_donation"]
             gender = serializer.validated_data["gender"]
             details = serializer.validated_data["details"]
 
-            # Get the current user ID
-            user_id = self.request.user.id
-            print(user_id)
-
-            # Fetching the DonorProfile instance for the user
             if user_id:
                 # Fetch the DonorProfile instance instead of UserBloodRequest
                 donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
@@ -244,3 +240,6 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = DonorProfileFilter
     search_fields = ["blood_group", "district", "date_of_donation"]
+
+
+# class UpdateDonarProfile()

@@ -85,6 +85,26 @@ class DonorProfileSerializer(serializers.ModelSerializer):
         ]
 
 
+class UpdateDonorProfileSerializer(serializers.ModelSerializer):
+
+    model = DonorProfile
+    fields = "__all__"
+
+    def update(self, instance, validated_data):
+        instance.blood_group = validated_data.get("blood_group", instance.blood_group)
+        instance.district = validated_data.get("district", instance.district)
+        instance.date_of_donation = validated_data.get(
+            "date_of_donation", instance.date_of_donation
+        )
+        instance.gender = validated_data.get("gender", instance.gender)
+        instance.is_available = validated_data.get(
+            "is_available", instance.is_available
+        )
+        instance.save()
+
+        return instance
+
+
 class UserBloodRequestSerializer(serializers.ModelSerializer):
     donor = serializers.StringRelatedField(many=False)
 
