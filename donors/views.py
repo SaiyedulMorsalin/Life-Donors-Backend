@@ -170,7 +170,7 @@ class CreateUserBloodRequestView(APIView):
             if user_id:
                 # Fetch the DonorProfile instance instead of UserBloodRequest
                 donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
-
+                user_data = serializer.validated_data.pop("user_id")
                 # Creating a new UserBloodRequest instance with the correct donor profile
                 UserBloodRequest.objects.create(
                     donor=donor_profile,

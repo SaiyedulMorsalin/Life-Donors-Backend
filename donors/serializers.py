@@ -107,7 +107,17 @@ class UpdateDonorProfileSerializer(serializers.ModelSerializer):
 
 class UserBloodRequestSerializer(serializers.ModelSerializer):
     donor = serializers.StringRelatedField(many=False)
+    user_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = UserBloodRequest
-        fields = "__all__"
+        fields = [
+            "donor",
+            "user_id",
+            "blood_group",
+            "blood_request_type",
+            "district",
+            "date_of_donation",
+            "gender",
+            "details",
+        ]
