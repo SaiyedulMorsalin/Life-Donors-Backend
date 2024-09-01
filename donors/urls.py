@@ -9,6 +9,8 @@ router = routers.DefaultRouter()
 # router.register(r"requests", views.UserBloodRequestViewSet, basename="userbloodrequest")
 router.register(r"donors", views.DonorSearchViewSet, basename="donor")
 
+router.register(r"requests", views.UserBloodRequestView, basename="userbloodrequest")
+
 # Define urlpatterns
 urlpatterns = [
     path("register/", views.UserRegistrationAPIView.as_view(), name="user_register"),
@@ -24,11 +26,16 @@ urlpatterns = [
         views.UserDashboardAPIView.as_view(),
         name="user_dashboard",
     ),
-    path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
     path(
-        "requests/",
-        views.UserBloodRequestAPIView.as_view(),
-        name="blood_requests",
+        "create/request/",
+        views.CreateUserBloodRequestView.as_view(),
+        name="create_request",
     ),
+    path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
+    # path(
+    #     "requests/",
+    #     views.UserBloodRequestAPIView.as_view(),
+    #     name="blood_requests",
+    # ),
     path("", include(router.urls)),
 ]
