@@ -22,7 +22,7 @@ urlpatterns = [
     path("login/", views.UserLoginApiView.as_view(), name="login"),
     path("logout/", views.UserLogoutView.as_view(), name="logout"),
     path(
-        "dashboard/<int:user_id>/",
+        "dashboard/<int:donor_id>/",
         views.UserDashboardAPIView.as_view(),
         name="user_dashboard",
     ),
@@ -30,6 +30,11 @@ urlpatterns = [
         "create/request/",
         views.CreateUserBloodRequestView.as_view(),
         name="create_request",
+    ),
+    path(
+        "update/profile/",
+        views.UpdateDonarProfileView.as_view(),
+        name="update_profile",
     ),
     path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
     # path(

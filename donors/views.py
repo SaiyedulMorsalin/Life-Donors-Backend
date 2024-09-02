@@ -21,6 +21,7 @@ from .serializers import (
     DonorProfileSerializer,
     UserBloodRequestSerializer,
     UserLoginSerializer,
+    UpdateDonorProfileSerializer,
 )
 from .models import DonorProfile, UserBloodRequest
 import logging
@@ -121,8 +122,6 @@ class UserLogoutView(APIView):
 
 class UserProfileAPIView(APIView):
 
-    # permission_classes = [IsAuthenticated]
-
     def get(self, request, user_id, *args, **kwargs):
         try:
             user_profiles = DonorProfile.objects.filter(user__id=user_id)
@@ -199,13 +198,10 @@ class UserDashboardAPIView(APIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = UserBloodRequestSerializer
 
-    def get(self, request, user_id, *args, **kwargs):
-        # Get the currently authenticated user
-        user = request.user
-        print(user_id)
-        # Fetch the donor profile for the authenticated user
+    def get(self, request, donor_id, *args, **kwargs):
+
         try:
-            donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
+            donor_profile = get_object_or_404(DonorProfile, id=donor_id)
             print("users_pro", donor_profile.user)
         except DonorProfile.DoesNotExist:
             return Response({"error": "Donor profile not found."}, status=404)
@@ -225,7 +221,7 @@ class UserDashboardAPIView(APIView):
 
         # Combine all the data into a response
         data = {
-            "user_id": user_id,
+            "donor_id": donor_id,
             "my_requests": user_requests_serializer.data,
             # "pending_requests": pending_requests_serializer.data,
         }
@@ -242,4 +238,40 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     search_fields = ["blood_group", "district", "date_of_donation"]
 
 
-# class UpdateDonarProfile()
+class UpdateDonarProfileView(APIView):
+
+    def post(self, request):
+        serializer = UpdateDonorProfileSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Extracting the validated data
+            user_id = serializer.validated_data["user_id"]
+            district = serializer.validated_data["district"]
+            date_of_donation = serializer.validated_data["date_of_donation"]
+            gender = serializer.validated_data["gender"]
+
+            if user_id:
+                # Fetch the DonorProfile instance for the given user
+                donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
+
+                # Update donor profile fields
+                donor_profile.district = district
+                donor_profile.date_of_donation = date_of_donation
+                donor_profile.gender = gender
+
+                # Save the updated profile
+                donor_profile.save()
+
+                print(donor_profile)
+
+                return Response(
+                    {"message": "User profile updated successfully."},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"error": "Invalid Credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
