@@ -22,8 +22,9 @@ from .serializers import (
     UserBloodRequestSerializer,
     UserLoginSerializer,
     UpdateDonorProfileSerializer,
+    UserBloodDonateSerializer,
 )
-from .models import DonorProfile, UserBloodRequest
+from .models import DonorProfile, UserBloodRequest, UserBloodDonate
 import logging
 
 logger = logging.getLogger(__name__)
@@ -173,6 +174,7 @@ class CreateUserBloodRequestView(APIView):
                 # Creating a new UserBloodRequest instance with the correct donor profile
                 UserBloodRequest.objects.create(
                     donor=donor_profile,
+                    blood_group=blood_group,
                     blood_request_type=blood_request_type,
                     district=district,
                     date_of_donation=date_of_donation,
@@ -266,6 +268,49 @@ class UpdateDonarProfileView(APIView):
 
                 return Response(
                     {"message": "User profile updated successfully."},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"error": "Invalid Credentials"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateUserBloodDonateView(APIView):
+
+    def post(self, request):
+        serializer = UserBloodDonateSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Extracting the validated data
+            blood_group = serializer.validated_data["blood_group"]
+            donor_id = serializer.validated_data["donor_id"]
+
+            district = serializer.validated_data["district"]
+            date_of_donation = serializer.validated_data["date_of_donation"]
+            gender = serializer.validated_data["gender"]
+            details = serializer.validated_data["details"]
+
+            if donor_id:
+                # Fetch the DonorProfile instance instead of UserBloodRequest
+                donor_profile = get_object_or_404(DonorProfile, user__id=donor_id)
+                user_data = serializer.validated_data.pop("donor_id")
+                # Creating a new UserBloodRequest instance with the correct donor profile
+                UserBloodDonate.objects.create(
+                    donor=donor_profile,
+                    # blood_group=blood_group,
+                    district=district,
+                    date_of_donation=date_of_donation,
+                    gender=gender,
+                    details=details,
+                )
+                print(donor_profile)
+
+                return Response(
+                    {"user": "User Found"},
                     status=status.HTTP_200_OK,
                 )
             else:

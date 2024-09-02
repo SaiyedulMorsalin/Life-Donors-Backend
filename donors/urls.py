@@ -32,6 +32,11 @@ urlpatterns = [
         name="create_request",
     ),
     path(
+        "create/donate/",
+        views.CreateUserBloodDonateView.as_view(),
+        name="create_donate",
+    ),
+    path(
         "update/profile/",
         views.UpdateDonarProfileView.as_view(),
         name="update_profile",

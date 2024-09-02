@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import DonorProfile, UserBloodRequest
+from .models import DonorProfile, UserBloodRequest, UserBloodDonate
 from .constants import BLOOD_GROUP, GENDER_TYPE
 
 
@@ -107,6 +107,23 @@ class UserBloodRequestSerializer(serializers.ModelSerializer):
             "user_id",
             "blood_group",
             "blood_request_type",
+            "district",
+            "date_of_donation",
+            "gender",
+            "details",
+        ]
+
+
+class UserBloodDonateSerializer(serializers.ModelSerializer):
+    donor = serializers.StringRelatedField(many=False)
+    donor_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = UserBloodDonate
+        fields = [
+            "donor",
+            "donor_id",
+            "blood_group",
             "district",
             "date_of_donation",
             "gender",

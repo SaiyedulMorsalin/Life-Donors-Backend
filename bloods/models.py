@@ -30,4 +30,5 @@ class BloodCampaign(models.Model):
     district = models.CharField(max_length=25)
     location = models.CharField(max_length=50)
     blood_group = models.CharField(max_length=4)
+
     pass
