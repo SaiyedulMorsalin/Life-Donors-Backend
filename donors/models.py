@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from .constants import BLOOD_GROUP, GENDER_TYPE, REQUEST_TYPE as BLOOD_REQUEST_TYPE
@@ -25,7 +26,10 @@ class UserBloodRequest(models.Model):
     date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
     accepted_donor_id = models.CharField(max_length=12, null=True, blank=True)
-    details = models.TextField(unique=True)
+    details = models.TextField()
+    unique_identifier = models.UUIDField(
+        default=uuid.uuid4, editable=False, unique=True
+    )
     cancel = models.BooleanField(default=False)
 
     def __str__(self):
@@ -44,7 +48,8 @@ class UserBloodDonate(models.Model):
     blood_request_type = models.CharField(
         choices=BLOOD_REQUEST_TYPE, max_length=20, null=True, blank=True
     )
-    details = models.TextField(unique=True)
+    details = models.TextField()
+    unique_identifier = models.TextField()
     cancel = models.BooleanField(default=False)
 
     def __str__(self):

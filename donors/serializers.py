@@ -143,4 +143,5 @@ class UserBloodDonateSerializer(serializers.ModelSerializer):
             "date_of_donation",
             "blood_request_type",
             "gender",
+            "details",
         ]
