@@ -17,7 +17,7 @@ from rest_framework.authtoken.models import Token
 from django_filters.rest_framework import DjangoFilterBackend
 
 
-from .filters import DonorProfileFilter
+from .filters import DonorProfileFilter, RequestFilter
 from .serializers import (
     UserRegistrationSerializer,
     DonorProfileSerializer,
@@ -180,25 +180,38 @@ class CreateUserBloodRequestView(APIView):
             details = serializer.validated_data["details"]
 
             if user_id:
+
                 # Fetch the DonorProfile instance instead of UserBloodRequest
                 donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
                 user_data = serializer.validated_data.pop("user_id")
                 # Creating a new UserBloodRequest instance with the correct donor profile
-                UserBloodRequest.objects.create(
-                    donor=donor_profile,
-                    blood_group=blood_group,
-                    blood_request_type="Pending",
-                    district=district,
-                    date_of_donation=date_of_donation,
-                    gender=gender,
-                    details=details,
-                )
-                print(donor_profile)
+                if (
+                    donor_profile.blood_group
+                    and donor_profile.district
+                    and donor_profile.gender
+                ):
+                    UserBloodRequest.objects.create(
+                        donor=donor_profile,
+                        blood_group=blood_group,
+                        blood_request_type="Pending",
+                        district=district,
+                        date_of_donation=date_of_donation,
+                        gender=gender,
+                        details=details,
+                    )
+                    print(donor_profile)
+                    return Response(
+                        {"message": "Your Blood Request Create Successfully!!"},
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    return Response(
+                        {
+                            "message": "Please your Profile fully updated then make a request for blood....."
+                        },
+                        status=status.HTTP_200_OK,
+                    )
 
-                return Response(
-                    {"user": "User Found"},
-                    status=status.HTTP_200_OK,
-                )
             else:
                 return Response(
                     {"error": "Invalid Credentials"},
@@ -367,6 +380,14 @@ class UserBloodRequestApproveView(APIView):
             )
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class RequestsSearchViewSet(viewsets.ModelViewSet):
+    queryset = UserBloodRequest.objects.all()
+    serializer_class = UserBloodRequestSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = RequestFilter
+    search_fields = ["blood_group", "district", "date_of_donation"]
 
 
 # class UserBloodDonateView(viewsets.ModelViewSet):
