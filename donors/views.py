@@ -7,7 +7,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, generics
+
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -152,7 +154,9 @@ class BloodRequestView(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = UserBloodRequest.objects.filter(blood_request_type="Pending")
+        queryset = UserBloodRequest.objects.filter(
+            blood_request_type__in=["Pending", "Running"]
+        )
         donor_id = self.request.query_params.get("donor_id")
         if donor_id:
             queryset = queryset.exclude(donor_id=donor_id)
@@ -220,19 +224,13 @@ class UserDashboardAPIView(APIView):
         user_requests = UserBloodRequest.objects.filter(donor__user=donor_profile.user)
         print("user_req", user_requests)
         user_requests_serializer = UserBloodRequestSerializer(user_requests, many=True)
-
-        # Fetch all pending blood requests (excluding the user's own requests)
-        pending_requests = UserBloodRequest.objects.exclude(
-            donor__user=donor_profile.user
-        )
-        pending_requests_serializer = UserBloodRequestSerializer(
-            pending_requests, many=True
-        )
-
+        user_donates = UserBloodDonate.objects.filter(donor__user=donor_profile.user)
+        user_donates_serializer = UserBloodDonateSerializer(user_donates, many=True)
         # Combine all the data into a response
         data = {
             "donor_id": donor_id,
             "my_requests": user_requests_serializer.data,
+            "my_donate": user_donates_serializer.data,
             # "pending_requests": pending_requests_serializer.data,
         }
 
@@ -248,36 +246,9 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     search_fields = ["blood_group", "district", "date_of_donation"]
 
 
-class UpdateDonorProfileView(APIView):
-
-    def post(self, request):
-        serializer = UpdateDonorProfileSerializer(data=request.data)
-
-        if serializer.is_valid():
-            # Extracting the validated data
-            user_id = serializer.validated_data["user_id"]
-            district = serializer.validated_data["district"]
-            date_of_donation = serializer.validated_data["date_of_donation"]
-            gender = serializer.validated_data["gender"]
-
-            # Fetch the DonorProfile instance for the given user
-            donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
-
-            # Update donor profile fields
-            donor_profile.district = district
-            donor_profile.date_of_donation = date_of_donation
-            donor_profile.gender = gender
-
-            # Save the updated profile
-            donor_profile.save()
-
-            return Response(
-                {"message": "User profile updated successfully."},
-                status=status.HTTP_200_OK,
-            )
-
-        # Return validation errors if the serializer is not valid
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UpdateDonorProfileView(generics.UpdateAPIView):
+    queryset = DonorProfile.objects.all()
+    serializer_class = UpdateDonorProfileSerializer
 
 
 class CreateUserBloodDonateView(APIView):
@@ -288,6 +259,7 @@ class CreateUserBloodDonateView(APIView):
         if serializer.is_valid():
             # Extracting the validated data
             blood_group = serializer.validated_data["blood_group"]
+            blood_request_type = serializer.validated_data["blood_request_type"]
             donor_id = serializer.validated_data["donor_id"]
             district = serializer.validated_data["district"]
             date_of_donation = serializer.validated_data["date_of_donation"]
@@ -323,9 +295,14 @@ class CreateUserBloodDonateView(APIView):
 
 
 class UserBloodRequestAcceptView(APIView):
-    serializer_class = UserBloodRequestSerializer
 
     def put(self, request, pk, format=None):
+        donor_id = self.request.query_params.get("donor_id")
+        accept_donor = get_object_or_404(DonorProfile, id=donor_id)
+        print("acc_donor", accept_donor)
+
+        print("donor_accept_id", donor_id)
+        serializer_class = UserBloodRequestSerializer
         try:
             # Fetch the UserBloodRequest instance by its primary key (pk)
             blood_request = get_object_or_404(UserBloodRequest, id=pk)
@@ -334,7 +311,7 @@ class UserBloodRequestAcceptView(APIView):
                 {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if blood_request:
+        if blood_request and accept_donor:
 
             print("change before", blood_request)
             blood_request.blood_request_type = "Running"
@@ -343,7 +320,10 @@ class UserBloodRequestAcceptView(APIView):
             print("id", blood_request.id)
             blood_request.save()
             return Response(
-                {"message": "Request Accepted  successfully."},
+                {
+                    "message": "Request Accepted  successfully.",
+                    "accept_donor_id": accept_donor.id,
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -354,6 +334,8 @@ class UserBloodRequestApproveView(APIView):
     serializer_class = UserBloodRequestSerializer
 
     def put(self, request, pk, format=None):
+        donor_id = self.request.query_params.get("donor_id")
+        accept_donor = get_object_or_404(DonorProfile, id=donor_id)
         try:
             # Fetch the UserBloodRequest instance by its primary key (pk)
             blood_request = get_object_or_404(UserBloodRequest, id=pk)
@@ -362,15 +344,38 @@ class UserBloodRequestApproveView(APIView):
                 {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if blood_request:
+        if blood_request and accept_donor:
+            UserBloodDonate.objects.create(
+                donor=accept_donor,
+                blood_group=accept_donor.blood_group,
+                blood_request_type="Completed",
+                district=accept_donor.district,
+                date_of_donation=accept_donor.date_of_donation,
+                gender=accept_donor.gender,
+            )
             print("change before", blood_request)
             blood_request.blood_request_type = "Completed"
             print("change after", blood_request)
             print("id", blood_request.id)
             blood_request.save()
             return Response(
-                {"message": "Request Approved  successfully."},
+                {
+                    "message": "Request Approved  successfully.",
+                    "accept_donor_id": accept_donor.id,
+                },
                 status=status.HTTP_200_OK,
             )
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+# class UserBloodDonateView(viewsets.ModelViewSet):
+#     serializer_class = UserBloodRequestSerializer
+
+#     # permission_classes = [IsAuthenticated]
+#     def get_queryset(self):
+#         queryset = UserBloodDonate.objects.all()
+#         donor_id = self.request.query_params.get("donor_id")
+#         if donor_id:
+#             queryset = queryset.filter(donor_id=donor_id)
+#         return queryset

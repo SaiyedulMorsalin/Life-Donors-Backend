@@ -39,7 +39,9 @@ class UserBloodDonate(models.Model):
     district = models.CharField(max_length=100, null=True, blank=True)
     date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
-    details = models.TextField()
+    blood_request_type = models.CharField(
+        choices=BLOOD_REQUEST_TYPE, max_length=20, null=True, blank=True
+    )
     cancel = models.BooleanField(default=False)
 
     def __str__(self):

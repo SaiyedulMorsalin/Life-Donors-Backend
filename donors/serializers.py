@@ -86,14 +86,27 @@ class DonorProfileSerializer(serializers.ModelSerializer):
 
 
 class UpdateDonorProfileSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField()
-    model = DonorProfile
-    fields = [
-        "user_id",
-        "district",
-        "date_of_donation",
-        "gender",
-    ]
+    # user_id = serializers.IntegerField(write_only=True)  # To accept user ID in input
+
+    class Meta:
+        model = DonorProfile
+        fields = [
+            # "user_id",
+            "district",
+            "date_of_donation",
+            "gender",
+        ]
+
+    def update(self, instance, validated_data):
+        # Update instance fields with validated data
+        instance.district = validated_data.get("district", instance.district)
+        instance.date_of_donation = validated_data.get(
+            "date_of_donation", instance.date_of_donation
+        )
+        instance.gender = validated_data.get("gender", instance.gender)
+
+        instance.save()
+        return instance
 
 
 class UserBloodRequestSerializer(serializers.ModelSerializer):
@@ -127,6 +140,6 @@ class UserBloodDonateSerializer(serializers.ModelSerializer):
             "blood_group",
             "district",
             "date_of_donation",
+            "blood_request_type",
             "gender",
-            "details",
         ]

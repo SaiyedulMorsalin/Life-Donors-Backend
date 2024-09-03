@@ -38,7 +38,7 @@ urlpatterns = [
         name="create_donate",
     ),
     path(
-        "update/profile/",
+        "update/profile/<int:pk>/",
         views.UpdateDonorProfileView.as_view(),
         name="update_profile",
     ),
