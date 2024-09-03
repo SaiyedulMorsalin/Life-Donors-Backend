@@ -339,6 +339,8 @@ class UserBloodRequestAcceptView(APIView):
         if blood_request and accept_donor:
             # Update the blood request status
             blood_request.blood_request_type = "Running"
+            blood_request.accepted_donor_id = accept_donor.id
+
             UserBloodDonate.objects.create(
                 donor=accept_donor,
                 blood_group=accept_donor.blood_group,
@@ -346,6 +348,7 @@ class UserBloodRequestAcceptView(APIView):
                 district=accept_donor.district,
                 date_of_donation=accept_donor.date_of_donation,
                 gender=accept_donor.gender,
+                details=blood_request.details,
             )
             blood_request.save()
 
@@ -372,7 +375,7 @@ class UserBloodRequestApproveView(APIView):
 
     def put(self, request, pk, format=None):
         donor_id = self.request.query_params.get("donor_id")
-        accept_donor = get_object_or_404(DonorProfile, id=donor_id)
+        approve_donor = get_object_or_404(DonorProfile, id=donor_id)
         try:
             # Fetch the UserBloodRequest instance by its primary key (pk)
             blood_request = get_object_or_404(UserBloodRequest, id=pk)
@@ -381,20 +384,22 @@ class UserBloodRequestApproveView(APIView):
                 {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        if blood_request and accept_donor:
+        if blood_request and approve_donor:
+            accepted_donor_id = blood_request.accepted_donor_id
 
             print("change before", blood_request)
             blood_request.blood_request_type = "Completed"
             print("change after", blood_request)
             print("id", blood_request.id)
+            print("accepted_donor_id", accepted_donor_id)
 
-            accept_donor.save()
+            approve_donor.save()
             blood_request.save()
             return Response(
                 {
                     "message": "Request Approved  successfully.",
-                    "accept_donor_id": accept_donor.id,
-                    "accept_donor": DonorProfileSerializer(accept_donor).data,
+                    "accept_donor_id": accepted_donor_id,
+                    # "accept_donor": DonorProfileSerializer(accept_donor).data,
                 },
                 status=status.HTTP_200_OK,
             )

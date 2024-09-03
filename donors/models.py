@@ -25,7 +25,7 @@ class UserBloodRequest(models.Model):
     date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
     accepted_donor_id = models.CharField(max_length=12, null=True, blank=True)
-    details = models.TextField()
+    details = models.TextField(unique=True)
     cancel = models.BooleanField(default=False)
 
     def __str__(self):
@@ -44,6 +44,7 @@ class UserBloodDonate(models.Model):
     blood_request_type = models.CharField(
         choices=BLOOD_REQUEST_TYPE, max_length=20, null=True, blank=True
     )
+    details = models.TextField(unique=True)
     cancel = models.BooleanField(default=False)
 
     def __str__(self):
