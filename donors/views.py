@@ -170,26 +170,18 @@ class CreateUserBloodRequestView(APIView):
         serializer = UserBloodRequestSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Extracting the validated data
-            blood_group = serializer.validated_data["blood_group"]
-            user_id = serializer.validated_data["user_id"]
-            blood_request_type = serializer.validated_data["blood_request_type"]
-            district = serializer.validated_data["district"]
-            date_of_donation = serializer.validated_data["date_of_donation"]
-            gender = serializer.validated_data["gender"]
-            details = serializer.validated_data["details"]
+            blood_group = serializer.validated_data.get("blood_group")
+            user_id = serializer.validated_data.get("user_id")
+            blood_request_type = serializer.validated_data.get("blood_request_type")
+            district = serializer.validated_data.get("district")
+            date_of_donation = serializer.validated_data.get("date_of_donation")
+            gender = serializer.validated_data.get("gender")
+            details = serializer.validated_data.get("details")
 
             if user_id:
-
-                # Fetch the DonorProfile instance instead of UserBloodRequest
                 donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
-                user_data = serializer.validated_data.pop("user_id")
-                # Creating a new UserBloodRequest instance with the correct donor profile
-                if (
-                    donor_profile.blood_group
-                    and donor_profile.district
-                    and donor_profile.gender
-                ):
+
+                if self.is_donor_profile_complete(donor_profile):
                     UserBloodRequest.objects.create(
                         donor=donor_profile,
                         blood_group=blood_group,
@@ -200,26 +192,31 @@ class CreateUserBloodRequestView(APIView):
                         details=details,
                         accepted_donor_id="",
                     )
-                    print(donor_profile)
                     return Response(
-                        {"message": "Your Blood Request Create Successfully!!"},
-                        status=status.HTTP_200_OK,
+                        {
+                            "message": "Your blood request has been created successfully."
+                        },
+                        status=status.HTTP_201_CREATED,
                     )
                 else:
                     return Response(
                         {
-                            "message": "Please your Profile fully updated then make a request for blood....."
+                            "message": "Please complete your profile before making a blood request."
                         },
-                        status=status.HTTP_200_OK,
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
-
             else:
                 return Response(
-                    {"error": "Invalid Credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    {"error": "Invalid user ID."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def is_donor_profile_complete(self, donor_profile):
+        return all(
+            [donor_profile.blood_group, donor_profile.district, donor_profile.gender]
+        )
 
 
 class UserDashboardAPIView(APIView):

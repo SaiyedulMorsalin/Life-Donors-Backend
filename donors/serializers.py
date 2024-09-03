@@ -124,6 +124,7 @@ class UserBloodRequestSerializer(serializers.ModelSerializer):
             "district",
             "date_of_donation",
             "gender",
+            "accepted_donor_id",
             "details",
         ]
 
