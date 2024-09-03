@@ -385,21 +385,40 @@ class UserBloodRequestApproveView(APIView):
             )
 
         if blood_request and approve_donor:
+            # Get the accepted donor's ID and the DonorProfile instance
             accepted_donor_id = blood_request.accepted_donor_id
+            accepted_donor = get_object_or_404(DonorProfile, id=accepted_donor_id)
 
-            print("change before", blood_request)
+            # Fetch the UserBloodDonate instance related to the blood request details
+            blood_donate = UserBloodDonate.objects.filter(
+                details=blood_request.details
+            ).first()
+
+            # Ensure blood_donate exists before making modifications
+            if blood_donate:
+                blood_donate.blood_request_type = "Completed"
+                blood_donate.save()  # Save the changes to the database
+                print("donate", blood_donate)
+
+            # Update the blood request type and save
             blood_request.blood_request_type = "Completed"
+            blood_request.save()
+
+            # Save the approved donor
+            approve_donor.save()
+
+            # Print debug information
+            print("change before", blood_request)
             print("change after", blood_request)
             print("id", blood_request.id)
             print("accepted_donor_id", accepted_donor_id)
+            print("accepted_donor", accepted_donor)
 
-            approve_donor.save()
-            blood_request.save()
             return Response(
                 {
                     "message": "Request Approved  successfully.",
                     "accept_donor_id": accepted_donor_id,
-                    # "accept_donor": DonorProfileSerializer(accept_donor).data,
+                    "accept_donor": DonorProfileSerializer(accepted_donor).data,
                 },
                 status=status.HTTP_200_OK,
             )
