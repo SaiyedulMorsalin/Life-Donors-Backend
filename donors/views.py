@@ -152,7 +152,7 @@ class BloodRequestView(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = UserBloodRequest.objects.all()
+        queryset = UserBloodRequest.objects.filter(blood_request_type="Pending")
         donor_id = self.request.query_params.get("donor_id")
         if donor_id:
             queryset = queryset.exclude(donor_id=donor_id)
