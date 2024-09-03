@@ -28,9 +28,7 @@ class UserBloodRequest(models.Model):
     cancel = models.BooleanField(default=False)
 
     def __str__(self):
-        return (
-            f"Donor: {self.donor.user.first_name} - Request: {self.blood_request_type}"
-        )
+        return f"Donor: {self.donor.user.first_name} - Request for  {self.blood_request_type} blood."
 
 
 class UserBloodDonate(models.Model):
@@ -45,6 +43,4 @@ class UserBloodDonate(models.Model):
     cancel = models.BooleanField(default=False)
 
     def __str__(self):
-        return (
-            f"Donor: {self.donor.user.first_name} - Request: {self.blood_request_type}"
-        )
+        return f"Donor: {self.donor.user.first_name} - Accepted  {self.blood_group} this blood."

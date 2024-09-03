@@ -10,7 +10,7 @@ router = routers.DefaultRouter()
 router.register(r"donors", views.DonorSearchViewSet, basename="donor")
 
 router.register(r"requests", views.UserBloodRequestView, basename="userbloodrequest")
-router.register(r"donate", views.BloodRequestView, basename="anyone_donate")
+router.register(r"available_request", views.BloodRequestView, basename="anyone_donate")
 
 # Define urlpatterns
 urlpatterns = [

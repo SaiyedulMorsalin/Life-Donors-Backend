@@ -156,7 +156,7 @@ class BloodRequestView(viewsets.ModelViewSet):
         donor_id = self.request.query_params.get("donor_id")
         if donor_id:
             queryset = queryset.exclude(donor_id=donor_id)
-
+        print(donor_id)
         return queryset
 
 
@@ -289,7 +289,6 @@ class CreateUserBloodDonateView(APIView):
             # Extracting the validated data
             blood_group = serializer.validated_data["blood_group"]
             donor_id = serializer.validated_data["donor_id"]
-
             district = serializer.validated_data["district"]
             date_of_donation = serializer.validated_data["date_of_donation"]
             gender = serializer.validated_data["gender"]
@@ -336,9 +335,11 @@ class UserBloodRequestAcceptView(APIView):
             )
 
         if blood_request:
+
             print("change before", blood_request)
             blood_request.blood_request_type = "Running"
             print("change after", blood_request)
+            print("donor", blood_request.donor)
             print("id", blood_request.id)
             blood_request.save()
             return Response(
