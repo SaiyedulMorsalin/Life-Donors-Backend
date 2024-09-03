@@ -10,6 +10,7 @@ router = routers.DefaultRouter()
 router.register(r"donors", views.DonorSearchViewSet, basename="donor")
 
 router.register(r"requests", views.UserBloodRequestView, basename="userbloodrequest")
+router.register(r"donate", views.BloodRequestView, basename="anyone_donate")
 
 # Define urlpatterns
 urlpatterns = [
@@ -38,14 +39,19 @@ urlpatterns = [
     ),
     path(
         "update/profile/",
-        views.UpdateDonarProfileView.as_view(),
+        views.UpdateDonorProfileView.as_view(),
         name="update_profile",
     ),
-    path("users/activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
-    # path(
-    #     "requests/",
-    #     views.UserBloodRequestAPIView.as_view(),
-    #     name="blood_requests",
-    # ),
+    path("activate/<str:uid64>/<str:token>/", views.activate, name="activate"),
+    path(
+        "accept/request/<int:pk>/",
+        views.UserBloodRequestAcceptView.as_view(),
+        name="accept_request",
+    ),
+    path(
+        "approve/request/<int:pk>/",
+        views.UserBloodRequestApproveView.as_view(),
+        name="accept_request",
+    ),
     path("", include(router.urls)),
 ]

@@ -104,6 +104,7 @@ class UserBloodRequestSerializer(serializers.ModelSerializer):
         model = UserBloodRequest
         fields = [
             "donor",
+            "id",
             "user_id",
             "blood_group",
             "blood_request_type",

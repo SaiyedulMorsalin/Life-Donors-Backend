@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import DonorProfile, UserBloodRequest
+from .models import DonorProfile, UserBloodRequest, UserBloodDonate
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
@@ -49,3 +49,4 @@ class UserBloodRequestAdmin(admin.ModelAdmin):
 
 admin.site.register(DonorProfile, DonorProfileAdmin)
 admin.site.register(UserBloodRequest, UserBloodRequestAdmin)
+admin.site.register(UserBloodDonate)

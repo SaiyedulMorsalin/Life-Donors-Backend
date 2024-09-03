@@ -135,7 +135,6 @@ class UserProfileAPIView(APIView):
 
 
 class UserBloodRequestView(viewsets.ModelViewSet):
-    queryset = UserBloodRequest.objects.all()
     serializer_class = UserBloodRequestSerializer
 
     # permission_classes = [IsAuthenticated]
@@ -146,10 +145,19 @@ class UserBloodRequestView(viewsets.ModelViewSet):
             queryset = queryset.filter(donor_id=donor_id)
         return queryset
 
-    def get(self, request):
-        queryset = self.get_queryset()
-        serializer = UserBloodRequestSerializer(queryset, many=True)
-        return Response(serializer.data)
+
+class BloodRequestView(viewsets.ModelViewSet):
+    serializer_class = UserBloodRequestSerializer
+
+    # permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = UserBloodRequest.objects.all()
+        donor_id = self.request.query_params.get("donor_id")
+        if donor_id:
+            queryset = queryset.exclude(donor_id=donor_id)
+
+        return queryset
 
 
 class CreateUserBloodRequestView(APIView):
@@ -175,7 +183,7 @@ class CreateUserBloodRequestView(APIView):
                 UserBloodRequest.objects.create(
                     donor=donor_profile,
                     blood_group=blood_group,
-                    blood_request_type=blood_request_type,
+                    blood_request_type="Pending",
                     district=district,
                     date_of_donation=date_of_donation,
                     gender=gender,
@@ -240,7 +248,7 @@ class DonorSearchViewSet(viewsets.ModelViewSet):
     search_fields = ["blood_group", "district", "date_of_donation"]
 
 
-class UpdateDonarProfileView(APIView):
+class UpdateDonorProfileView(APIView):
 
     def post(self, request):
         serializer = UpdateDonorProfileSerializer(data=request.data)
@@ -252,30 +260,23 @@ class UpdateDonarProfileView(APIView):
             date_of_donation = serializer.validated_data["date_of_donation"]
             gender = serializer.validated_data["gender"]
 
-            if user_id:
-                # Fetch the DonorProfile instance for the given user
-                donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
+            # Fetch the DonorProfile instance for the given user
+            donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
 
-                # Update donor profile fields
-                donor_profile.district = district
-                donor_profile.date_of_donation = date_of_donation
-                donor_profile.gender = gender
+            # Update donor profile fields
+            donor_profile.district = district
+            donor_profile.date_of_donation = date_of_donation
+            donor_profile.gender = gender
 
-                # Save the updated profile
-                donor_profile.save()
+            # Save the updated profile
+            donor_profile.save()
 
-                print(donor_profile)
+            return Response(
+                {"message": "User profile updated successfully."},
+                status=status.HTTP_200_OK,
+            )
 
-                return Response(
-                    {"message": "User profile updated successfully."},
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {"error": "Invalid Credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
+        # Return validation errors if the serializer is not valid
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -301,7 +302,7 @@ class CreateUserBloodDonateView(APIView):
                 # Creating a new UserBloodRequest instance with the correct donor profile
                 UserBloodDonate.objects.create(
                     donor=donor_profile,
-                    # blood_group=blood_group,
+                    blood_group=blood_group,
                     district=district,
                     date_of_donation=date_of_donation,
                     gender=gender,
@@ -320,3 +321,55 @@ class CreateUserBloodDonateView(APIView):
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBloodRequestAcceptView(APIView):
+    serializer_class = UserBloodRequestSerializer
+
+    def put(self, request, pk, format=None):
+        try:
+            # Fetch the UserBloodRequest instance by its primary key (pk)
+            blood_request = get_object_or_404(UserBloodRequest, id=pk)
+        except UserBloodRequest.DoesNotExist:
+            return Response(
+                {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if blood_request:
+            print("change before", blood_request)
+            blood_request.blood_request_type = "Running"
+            print("change after", blood_request)
+            print("id", blood_request.id)
+            blood_request.save()
+            return Response(
+                {"message": "Request Accepted  successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBloodRequestApproveView(APIView):
+    serializer_class = UserBloodRequestSerializer
+
+    def put(self, request, pk, format=None):
+        try:
+            # Fetch the UserBloodRequest instance by its primary key (pk)
+            blood_request = get_object_or_404(UserBloodRequest, id=pk)
+        except UserBloodRequest.DoesNotExist:
+            return Response(
+                {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if blood_request:
+            print("change before", blood_request)
+            blood_request.blood_request_type = "Completed"
+            print("change after", blood_request)
+            print("id", blood_request.id)
+            blood_request.save()
+            return Response(
+                {"message": "Request Approved  successfully."},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
