@@ -198,6 +198,7 @@ class CreateUserBloodRequestView(APIView):
                         date_of_donation=date_of_donation,
                         gender=gender,
                         details=details,
+                        accepted_donor_id="",
                     )
                     print(donor_profile)
                     return Response(
@@ -389,7 +390,7 @@ class UserBloodRequestApproveView(APIView):
             blood_request.blood_request_type = "Completed"
             print("change after", blood_request)
             print("id", blood_request.id)
-            accept_donor.blood_request_type = "Completed"
+
             accept_donor.save()
             blood_request.save()
             return Response(
