@@ -183,7 +183,7 @@ class CreateUserBloodRequestView(APIView):
             details = serializer.validated_data.get("details")
 
             if user_id:
-                donor_profile = get_object_or_404(DonorProfile, user__id=user_id)
+                donor_profile = get_object_or_404(DonorProfile, id=user_id)
 
                 if self.is_donor_profile_complete(donor_profile):
                     UserBloodRequest.objects.create(
