@@ -429,11 +429,14 @@ class UserBloodRequestApproveView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+import logging
+
+
 class RequestsSearchViewSet(viewsets.ModelViewSet):
     serializer_class = UserBloodRequestSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = RequestFilter
-    search_fields = ["blood_group", "district", "date_of_donation"]
+    search_fields = ["blood_group", "district", "donor_id"]
 
     def get_queryset(self):
         queryset = UserBloodRequest.objects.filter(
