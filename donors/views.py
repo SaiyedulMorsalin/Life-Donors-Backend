@@ -131,7 +131,7 @@ class UserProfileAPIView(APIView):
 
     def get(self, request, user_id, *args, **kwargs):
         try:
-            user_profiles = DonorProfile.objects.filter(user__id=user_id)
+            user_profiles = DonorProfile.objects.filter(id=user_id)
             serializer = DonorProfileSerializer(user_profiles, many=True)
             return Response(serializer.data)
         except DonorProfile.DoesNotExist:
