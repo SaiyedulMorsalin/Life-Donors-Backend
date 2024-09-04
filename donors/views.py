@@ -185,7 +185,11 @@ class CreateUserBloodRequestView(APIView):
             if user_id:
                 donor_profile = get_object_or_404(DonorProfile, id=user_id)
 
-                if self.is_donor_profile_complete(donor_profile):
+                if (
+                    donor_profile.blood_group
+                    and donor_profile.district
+                    and donor_profile.gender
+                ):
                     UserBloodRequest.objects.create(
                         donor=donor_profile,
                         blood_group=blood_group,
@@ -216,11 +220,6 @@ class CreateUserBloodRequestView(APIView):
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def is_donor_profile_complete(self, donor_profile):
-        return all(
-            [donor_profile.blood_group, donor_profile.district, donor_profile.gender]
-        )
 
 
 class UserDashboardAPIView(APIView):
