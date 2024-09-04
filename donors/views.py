@@ -99,14 +99,18 @@ class UserLoginApiView(APIView):
                 login(request, user)
 
                 session_id = request.session.session_key
-
+                # user_profile =
                 # If session ID doesn't exist yet, create it
                 if not session_id:
                     request.session.create()
                     session_id = request.session.session_key
-
+                user_id = user.id - 1
                 return Response(
-                    {"token": token.key, "user_id": user.id, "session_id": session_id},
+                    {
+                        "token": token.key,
+                        "user_id": user_id,
+                        "session_id": session_id,
+                    },
                     status=status.HTTP_200_OK,
                 )
             else:
