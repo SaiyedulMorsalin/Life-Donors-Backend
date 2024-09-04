@@ -430,8 +430,16 @@ class UserBloodRequestApproveView(APIView):
 
 
 class RequestsSearchViewSet(viewsets.ModelViewSet):
-    queryset = UserBloodRequest.objects.all()
     serializer_class = UserBloodRequestSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = RequestFilter
     search_fields = ["blood_group", "district", "date_of_donation"]
+
+    def get_queryset(self):
+        queryset = UserBloodRequest.objects.filter(
+            blood_request_type__in=["Pending", "Running"]
+        )
+        donor_id = self.request.query_params.get("donor_id")
+        if donor_id:
+            queryset = queryset.exclude(donor_id=donor_id)
+        return queryset
