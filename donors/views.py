@@ -85,7 +85,7 @@ def activate(request, uid64, token):
         user.is_active = True
         user.save()
         logger.info(f"User {user.username} activated successfully.")
-        return redirect("https://life-donors.vercel.app/login")
+        return redirect("https://life-donors-frontend.vercel.app/login")
     else:
         logger.warning("Invalid activation link or token.")
         return redirect("https://life-donors-frontend.vercel.app/register")
