@@ -11,6 +11,7 @@ class DonorProfile(models.Model):
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
     is_available = models.BooleanField(default=True)
     mobile_number = models.CharField(max_length=11, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.blood_group}"

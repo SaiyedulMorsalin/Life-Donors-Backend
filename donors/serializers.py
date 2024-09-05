@@ -61,6 +61,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             gender="",  # Assign default or empty value as required
             district="",  # Assign default or empty value as required
             mobile_number=mobile_number,
+            email=email,
         )
 
         return user
@@ -84,6 +85,7 @@ class DonorProfileSerializer(serializers.ModelSerializer):
             "gender",
             "is_available",
             "mobile_number",
+            "email",
         ]
 
 
