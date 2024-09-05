@@ -75,14 +75,18 @@ def activate(request, uid64, token):
     try:
         uid = urlsafe_base64_decode(uid64).decode()
         user = User.objects.get(pk=uid)
-    except (User.DoesNotExist, ValueError, TypeError):
+        logger.info(f"User found: {user}")
+    except (User.DoesNotExist, ValueError, TypeError) as e:
+        logger.error(f"Activation error: {e}")
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
+        logger.info(f"User {user.username} activated successfully.")
         return redirect("https://life-donors-frontend.vercel.app/login")
     else:
+        logger.warning("Invalid activation link or token.")
         return redirect("https://life-donors-frontend.vercel.app/register")
 
 
