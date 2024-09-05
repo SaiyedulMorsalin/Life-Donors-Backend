@@ -81,9 +81,9 @@ def activate(request, uid64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return redirect("login")
+        return redirect("https://life-donors-frontend.vercel.app/login")
     else:
-        return redirect("user_register")
+        return redirect("https://life-donors-frontend.vercel.app/register")
 
 
 class UserLoginApiView(APIView):
@@ -208,10 +208,8 @@ class CreateUserBloodRequestView(APIView):
                     )
                 else:
                     return Response(
-                        {
-                            "message": "Please complete your profile before making a blood request."
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
+                        {"error": "Please Update your Profile then Make a request..."},
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
             else:
                 return Response(
