@@ -6,7 +6,7 @@ from .constants import BLOOD_GROUP, GENDER_TYPE
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
-    mobile_number = serializers.CharField(max_length=12, required=True)
+    mobile_number = serializers.CharField(max_length=11, required=True)
     blood_group = serializers.ChoiceField(choices=BLOOD_GROUP, required=True)
 
     class Meta:
@@ -60,6 +60,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             blood_group=blood_group,
             gender="",  # Assign default or empty value as required
             district="",  # Assign default or empty value as required
+            mobile_number=mobile_number,
         )
 
         return user
@@ -82,6 +83,7 @@ class DonorProfileSerializer(serializers.ModelSerializer):
             "date_of_donation",
             "gender",
             "is_available",
+            "mobile_number",
         ]
 
 

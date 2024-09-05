@@ -128,7 +128,7 @@ class UserLoginApiView(APIView):
 class UserLogoutView(APIView):
     def get(self, request):
         logout(request)
-        return redirect("login")
+        return redirect("https://life-donors-frontend.vercel.app/login")
 
 
 class UserProfileAPIView(APIView):
@@ -172,6 +172,50 @@ class BloodRequestView(viewsets.ModelViewSet):
         return queryset
 
 
+class UserDashboardAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+    serializer_class = UserBloodRequestSerializer
+
+    def get(self, request, donor_id, *args, **kwargs):
+
+        try:
+            donor_profile = get_object_or_404(DonorProfile, id=donor_id)
+            print("users_pro", donor_profile.user)
+        except DonorProfile.DoesNotExist:
+            return Response({"error": "Donor profile not found."}, status=404)
+
+        # Fetch the user's own blood requests
+        user_requests = UserBloodRequest.objects.filter(donor__user=donor_profile.user)
+        print("user_req", user_requests)
+        user_requests_serializer = UserBloodRequestSerializer(user_requests, many=True)
+        user_donates = UserBloodDonate.objects.filter(donor__user=donor_profile.user)
+        user_donates_serializer = UserBloodDonateSerializer(user_donates, many=True)
+        # Combine all the data into a response
+        data = {
+            "donor_id": donor_id,
+            "donor_mobile_number": donor_profile.mobile_number,
+            "my_requests": user_requests_serializer.data,
+            "my_donate": user_donates_serializer.data,
+            # "pending_requests": pending_requests_serializer.data,
+        }
+
+        # Return the combined data as a Response
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class DonorSearchViewSet(viewsets.ModelViewSet):
+    queryset = DonorProfile.objects.all()
+    serializer_class = DonorProfileSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = DonorProfileFilter
+    search_fields = ["blood_group", "district", "date_of_donation"]
+
+
+class UpdateDonorProfileView(generics.UpdateAPIView):
+    queryset = DonorProfile.objects.all()
+    serializer_class = UpdateDonorProfileSerializer
+
+
 class CreateUserBloodRequestView(APIView):
 
     def post(self, request):
@@ -206,7 +250,8 @@ class CreateUserBloodRequestView(APIView):
                     )
                     return Response(
                         {
-                            "message": "Your blood request has been created successfully."
+                            "message": "Your blood request has been created successfully.",
+                            "donor_mobile_number": donor_profile.mobile_number,
                         },
                         status=status.HTTP_201_CREATED,
                     )
@@ -224,56 +269,12 @@ class CreateUserBloodRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserDashboardAPIView(APIView):
-    # permission_classes = [IsAuthenticated]
-    serializer_class = UserBloodRequestSerializer
-
-    def get(self, request, donor_id, *args, **kwargs):
-
-        try:
-            donor_profile = get_object_or_404(DonorProfile, id=donor_id)
-            print("users_pro", donor_profile.user)
-        except DonorProfile.DoesNotExist:
-            return Response({"error": "Donor profile not found."}, status=404)
-
-        # Fetch the user's own blood requests
-        user_requests = UserBloodRequest.objects.filter(donor__user=donor_profile.user)
-        print("user_req", user_requests)
-        user_requests_serializer = UserBloodRequestSerializer(user_requests, many=True)
-        user_donates = UserBloodDonate.objects.filter(donor__user=donor_profile.user)
-        user_donates_serializer = UserBloodDonateSerializer(user_donates, many=True)
-        # Combine all the data into a response
-        data = {
-            "donor_id": donor_id,
-            "my_requests": user_requests_serializer.data,
-            "my_donate": user_donates_serializer.data,
-            # "pending_requests": pending_requests_serializer.data,
-        }
-
-        # Return the combined data as a Response
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class DonorSearchViewSet(viewsets.ModelViewSet):
-    queryset = DonorProfile.objects.all()
-    serializer_class = DonorProfileSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_class = DonorProfileFilter
-    search_fields = ["blood_group", "district", "date_of_donation"]
-
-
-class UpdateDonorProfileView(generics.UpdateAPIView):
-    queryset = DonorProfile.objects.all()
-    serializer_class = UpdateDonorProfileSerializer
-
-
 class CreateUserBloodDonateView(APIView):
 
     def post(self, request):
         serializer = UserBloodDonateSerializer(data=request.data)
 
         if serializer.is_valid():
-            # Extracting the validated data
             blood_group = serializer.validated_data["blood_group"]
             blood_request_type = serializer.validated_data["blood_request_type"]
             donor_id = serializer.validated_data["donor_id"]
