@@ -102,7 +102,6 @@ class UpdateDonorProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = DonorProfile
         fields = [
-            # "user_id",
             "district",
             "date_of_donation",
             "gender",
