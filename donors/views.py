@@ -240,6 +240,7 @@ class CreateUserBloodRequestView(APIView):
                 ):
                     UserBloodRequest.objects.create(
                         donor=donor_profile,
+                        req_donor_id=donor_profile.id,
                         blood_group=blood_group,
                         blood_request_type="Pending",
                         district=district,

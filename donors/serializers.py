@@ -114,13 +114,15 @@ class UpdateDonorProfileSerializer(serializers.ModelSerializer):
 
 
 class UserBloodRequestSerializer(serializers.ModelSerializer):
-    # donor = serializers.StringRelatedField(many=False)
+    donor = serializers.StringRelatedField(many=False)
     user_id = serializers.IntegerField(write_only=True)
+    req_donor_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = UserBloodRequest
         fields = [
             "donor",
+            "req_donor_id",
             "id",
             "user_id",
             "blood_group",
