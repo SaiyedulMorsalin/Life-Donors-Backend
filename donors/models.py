@@ -6,12 +6,12 @@ from .constants import BLOOD_GROUP, GENDER_TYPE, REQUEST_TYPE as BLOOD_REQUEST_T
 class DonorProfile(models.Model):
     user = models.OneToOneField(User, related_name="donors", on_delete=models.CASCADE)
     blood_group = models.CharField(max_length=4, choices=BLOOD_GROUP)
-    district = models.CharField(max_length=100)
-    date_of_donation = models.DateField(blank=True, null=True)
+    district = models.CharField(max_length=100, null=True, blank=True)
+    date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
     is_available = models.BooleanField(default=True)
-    mobile_number = models.CharField(max_length=11)
-    email = models.EmailField()
+    mobile_number = models.CharField(max_length=11, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.blood_group}"
@@ -26,7 +26,7 @@ class UserBloodRequest(models.Model):
     district = models.CharField(max_length=100)
     date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
-    accepted_donor_id = models.CharField(max_length=12)
+    accepted_donor_id = models.CharField(max_length=12, null=True, blank=True)
     details = models.CharField(max_length=255, unique=True)
     cancel = models.BooleanField(default=False)
 
@@ -43,7 +43,7 @@ class UserBloodDonate(models.Model):
     district = models.CharField(max_length=100)
     date_of_donation = models.DateField(null=True, blank=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
-    approve_donor_id = models.CharField(max_length=12)
+    approve_donor_id = models.CharField(max_length=12, null=True, blank=True)
     details = models.CharField(max_length=255, unique=True)
     cancel = models.BooleanField(default=False)
 
