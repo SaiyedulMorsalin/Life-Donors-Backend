@@ -114,7 +114,7 @@ class UpdateDonorProfileSerializer(serializers.ModelSerializer):
 
 
 class UserBloodRequestSerializer(serializers.ModelSerializer):
-    donor = serializers.StringRelatedField(many=False)
+    # donor = serializers.StringRelatedField(many=False)
     user_id = serializers.IntegerField(write_only=True)
 
     class Meta:
