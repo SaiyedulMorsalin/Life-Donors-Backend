@@ -72,12 +72,18 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "is_active"]
+
+
 class DonorProfileSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = DonorProfile
-        fields = fields = [
+        fields = [
             "user",
             "blood_group",
             "district",
@@ -114,7 +120,7 @@ class UpdateDonorProfileSerializer(serializers.ModelSerializer):
 
 
 class UserBloodRequestSerializer(serializers.ModelSerializer):
-    donor = serializers.StringRelatedField(many=False)
+    donor = DonorProfileSerializer(read_only=True)
     user_id = serializers.IntegerField(write_only=True)
 
     class Meta:
