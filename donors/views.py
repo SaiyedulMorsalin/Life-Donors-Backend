@@ -185,13 +185,12 @@ class UserDashboardAPIView(APIView):
         except DonorProfile.DoesNotExist:
             return Response({"error": "Donor profile not found."}, status=404)
 
-        # Fetch the user's own blood requests
         user_requests = UserBloodRequest.objects.filter(donor__user=donor_profile.user)
         print("user_req", user_requests)
         user_requests_serializer = UserBloodRequestSerializer(user_requests, many=True)
         user_donates = UserBloodDonate.objects.filter(donor__user=donor_profile.user)
         user_donates_serializer = UserBloodDonateSerializer(user_donates, many=True)
-        # Combine all the data into a response
+
         data = {
             "donor_id": donor_id,
             "donor_mobile_number": donor_profile.mobile_number,
@@ -333,7 +332,6 @@ class UserBloodRequestAcceptView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Fetch the UserBloodRequest instance by its primary key (pk)
         try:
             blood_request = UserBloodRequest.objects.get(id=pk)
         except UserBloodRequest.DoesNotExist:
@@ -356,12 +354,14 @@ class UserBloodRequestAcceptView(APIView):
                 date_of_donation=accept_donor.date_of_donation,
                 gender=accept_donor.gender,
                 details=blood_request.details,
+                approve_donor_id=blood_request.donor.id,
             )
             blood_request.save()
 
             return Response(
                 {
                     "message": "Request accepted successfully.",
+                    # "req_donor_id": blood_request.donor.id,
                     "accept_donor_id": accept_donor.id,
                     "accept_donor": DonorProfileSerializer(
                         accept_donor
