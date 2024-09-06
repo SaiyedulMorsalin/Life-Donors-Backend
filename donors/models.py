@@ -7,7 +7,7 @@ class DonorProfile(models.Model):
     user = models.OneToOneField(User, related_name="donors", on_delete=models.CASCADE)
     blood_group = models.CharField(max_length=4, choices=BLOOD_GROUP)
     district = models.CharField(max_length=100)
-    date_of_donation = models.DateField()
+    date_of_donation = models.DateField(blank=True, null=True)
     gender = models.CharField(choices=GENDER_TYPE, max_length=10)
     is_available = models.BooleanField(default=True)
     mobile_number = models.CharField(max_length=11)
