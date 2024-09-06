@@ -75,7 +75,7 @@ class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "is_active"]
+        fields = ["username", "first_name", "last_name", "is_active"]
 
 
 class DonorProfileSerializer(serializers.ModelSerializer):
@@ -84,6 +84,7 @@ class DonorProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = DonorProfile
         fields = [
+            "id",
             "user",
             "blood_group",
             "district",
