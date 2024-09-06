@@ -192,8 +192,14 @@ class UserDashboardAPIView(APIView):
         user_donates_serializer = UserBloodDonateSerializer(user_donates, many=True)
 
         data = {
-            "donor_id": donor_id,
+            "donor_id": donor_profile.id,
+            "donor_username": donor_profile.user.username,
+            "donor_first_name": donor_profile.user.first_name,
+            "donor_last_name": donor_profile.user.last_name,
             "donor_mobile_number": donor_profile.mobile_number,
+            "donor_email": donor_profile.user.email,
+            "donor_mobile_number": donor_profile.mobile_number,
+            "donor_blood_group": donor_profile.blood_group,
             "my_requests": user_requests_serializer.data,
             "my_donate": user_donates_serializer.data,
             # "pending_requests": pending_requests_serializer.data,
