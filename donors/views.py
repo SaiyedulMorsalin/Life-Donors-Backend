@@ -459,37 +459,38 @@ class UserBloodRequestDelete(APIView):
     serializer_class = UserBloodRequestSerializer
 
     def delete(self, request, pk, format=None):
+
         donor_id = self.request.query_params.get("donor_id")
-        approve_donor = get_object_or_404(DonorProfile, id=donor_id)
-        try:
-            blood_request = get_object_or_404(UserBloodRequest, id=pk)
-        except UserBloodRequest.DoesNotExist:
+        if not donor_id:
             return Response(
-                {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Donor ID is required."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if blood_request and approve_donor:
-            blood_request_id = blood_request.id
+        approve_donor = get_object_or_404(DonorProfile, id=donor_id)
+
+        blood_request = get_object_or_404(UserBloodRequest, id=pk)
+
+        # Delete the blood request
+        blood_request_id = blood_request.id
+        blood_request.delete()
+
+        # Delete the related donation request, if any
+        try:
             donate_request = get_object_or_404(
                 UserBloodDonate, details=blood_request.details
             )
-            donate_request.delete()
-            blood_request.delete()
-            return Response(
-                {
-                    "message": "Request Delete  successfully.",
-                    "blood_request_id": blood_request_id,
-                },
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {
-                    "message": "Request Not Found",
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            if donate_request:
+                donate_request.delete()
+        except UserBloodDonate.DoesNotExist:
+            pass
+
+        return Response(
+            {
+                "message": "Request deleted successfully.",
+                "blood_request_id": blood_request_id,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserBloodRequestCancel(APIView):
