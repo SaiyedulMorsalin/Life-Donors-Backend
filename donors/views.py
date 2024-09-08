@@ -319,17 +319,14 @@ class CreateUserBloodDonateView(APIView):
 
 class UserBloodRequestAcceptView(APIView):
     def put(self, request, pk, format=None):
-        # Retrieve donor_id from query parameters
         donor_id = self.request.query_params.get("donor_id")
 
-        # Ensure donor_id is provided
         if not donor_id:
             return Response(
                 {"error": "Donor ID is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Fetch the DonorProfile instance
         try:
             accept_donor = DonorProfile.objects.get(id=donor_id)
         except DonorProfile.DoesNotExist:
@@ -346,9 +343,8 @@ class UserBloodRequestAcceptView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Check if both blood request and donor are valid
         if blood_request and accept_donor:
-            # Update the blood request status
+
             blood_request.blood_request_type = "Running"
             blood_request.accepted_donor_id = accept_donor.id
 
@@ -408,9 +404,10 @@ class UserBloodRequestApproveView(APIView):
 
             if blood_donate:
                 blood_donate.blood_request_type = "Completed"
-                approve_donor.date_of_donation = blood_donate.date_of_donation
+                accepted_donor.date_of_donation = blood_donate.date_of_donation
+                print(accepted_donor.user)
                 blood_donate.save()
-                approve_donor.save()
+                accepted_donor.save()
                 print("donate", blood_donate)
 
             blood_request.blood_request_type = "Completed"
