@@ -402,25 +402,22 @@ class UserBloodRequestApproveView(APIView):
             accepted_donor_id = blood_request.accepted_donor_id
             accepted_donor = get_object_or_404(DonorProfile, id=accepted_donor_id)
 
-            # Fetch the UserBloodDonate instance related to the blood request details
             blood_donate = UserBloodDonate.objects.filter(
                 details=blood_request.details
             ).first()
 
-            # Ensure blood_donate exists before making modifications
             if blood_donate:
                 blood_donate.blood_request_type = "Completed"
-                blood_donate.save()  # Save the changes to the database
+                approve_donor.date_of_donation = blood_donate.date_of_donation
+                blood_donate.save()
+                approve_donor.save()
                 print("donate", blood_donate)
 
-            # Update the blood request type and save
             blood_request.blood_request_type = "Completed"
             blood_request.save()
 
-            # Save the approved donor
             approve_donor.save()
 
-            # Print debug information
             print("change before", blood_request)
             print("change after", blood_request)
             print("id", blood_request.id)
