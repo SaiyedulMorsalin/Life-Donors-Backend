@@ -354,11 +354,11 @@ class UserBloodRequestAcceptView(APIView):
 
             UserBloodDonate.objects.create(
                 donor=accept_donor,
-                blood_group=accept_donor.blood_group,
+                blood_group=blood_request.blood_group,
                 blood_request_type="Pending",
-                district=accept_donor.district,
-                date_of_donation=accept_donor.date_of_donation,
-                gender=accept_donor.gender,
+                district=blood_request.district,
+                date_of_donation=blood_request.date_of_donation,
+                gender=blood_request.gender,
                 details=blood_request.details,
                 approve_donor_id=blood_request.donor.id,
             )
@@ -439,9 +439,6 @@ class UserBloodRequestApproveView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-import logging
-
-
 class RequestsSearchViewSet(viewsets.ModelViewSet):
     serializer_class = UserBloodRequestSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -456,3 +453,109 @@ class RequestsSearchViewSet(viewsets.ModelViewSet):
         if donor_id:
             queryset = queryset.exclude(donor_id=donor_id)
         return queryset
+
+
+class UserBloodRequestDelete(APIView):
+    serializer_class = UserBloodRequestSerializer
+
+    def delete(self, request, pk, format=None):
+        donor_id = self.request.query_params.get("donor_id")
+        approve_donor = get_object_or_404(DonorProfile, id=donor_id)
+        try:
+            blood_request = get_object_or_404(UserBloodRequest, id=pk)
+        except UserBloodRequest.DoesNotExist:
+            return Response(
+                {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if blood_request and approve_donor:
+            blood_request_id = blood_request.id
+            donate_request = get_object_or_404(
+                UserBloodDonate, details=blood_request.details
+            )
+            donate_request.delete()
+            blood_request.delete()
+            return Response(
+                {
+                    "message": "Request Delete  successfully.",
+                    "blood_request_id": blood_request_id,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {
+                    "message": "Request Not Found",
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBloodRequestCancel(APIView):
+    serializer_class = UserBloodRequestSerializer
+
+    def put(self, request, pk, format=None):
+        donor_id = self.request.query_params.get("donor_id")
+        requester_donor = get_object_or_404(DonorProfile, id=donor_id)
+        try:
+            blood_request = get_object_or_404(UserBloodRequest, id=pk)
+        except UserBloodRequest.DoesNotExist:
+            return Response(
+                {"error": "Blood request not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if blood_request and requester_donor:
+            blood_request_id = blood_request.id
+            donate_request = get_object_or_404(
+                UserBloodDonate, details=blood_request.details
+            )
+            donate_request.delete()
+            blood_request.blood_request_type = "Pending"
+            blood_request.accepted_donor_id = ""
+            blood_request.save()
+            return Response(
+                {
+                    "message": "Request Delete  successfully.",
+                    "blood_request_id": blood_request_id,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {
+                    "message": "Request Not Found",
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBloodDonateCancel(APIView):
+    serializer_class = UserBloodDonate
+
+    def put(self, request, pk, format=None):
+        donor_id = request.query_params.get("donor_id")
+        donate_donor = get_object_or_404(DonorProfile, id=donor_id)
+        donate_request = get_object_or_404(UserBloodDonate, id=pk)
+
+        # Find the related blood request
+        blood_request = get_object_or_404(
+            UserBloodRequest, details=donate_request.details
+        )
+
+        # Update the blood request status
+        blood_request.blood_request_type = "Pending"
+        blood_request.accepted_donor_id = ""
+        blood_request.save()
+
+        # Delete the donation record
+        donate_request.delete()
+
+        return Response(
+            {
+                "message": "Donation canceled successfully.",
+                "blood_donate_id": pk,
+            },
+            status=status.HTTP_200_OK,
+        )

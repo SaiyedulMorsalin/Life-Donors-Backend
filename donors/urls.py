@@ -2,11 +2,10 @@ from django.urls import path, include
 from rest_framework import routers
 from . import views
 
-# Initialize the default router
+
 router = routers.DefaultRouter()
 
-# Register the ViewSets with the router
-# router.register(r"requests", views.UserBloodRequestViewSet, basename="userbloodrequest")
+
 router.register(r"donors", views.DonorSearchViewSet, basename="donor")
 
 router.register(
@@ -54,7 +53,22 @@ urlpatterns = [
     path(
         "approve/request/<int:pk>/",
         views.UserBloodRequestApproveView.as_view(),
-        name="accept_request",
+        name="approve_request",
+    ),
+    path(
+        "delete/request/<int:pk>/",
+        views.UserBloodRequestDelete.as_view(),
+        name="delete_request",
+    ),
+    path(
+        "cancel/request/<int:pk>/",
+        views.UserBloodRequestCancel.as_view(),
+        name="cancel_request",
+    ),
+    path(
+        "cancel/donate/<int:pk>/",
+        views.UserBloodDonateCancel.as_view(),
+        name="cancel_donate",
     ),
     path("", include(router.urls)),
 ]

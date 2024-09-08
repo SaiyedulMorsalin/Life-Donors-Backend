@@ -146,6 +146,7 @@ class UserBloodDonateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBloodDonate
         fields = [
+            "id",
             "donor",
             "donor_id",
             "blood_group",
